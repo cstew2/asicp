@@ -44,7 +44,7 @@ void asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	D(2, 2) = (U*V).determinant();
 
 	//Find the rotation
-	Q = U * D * V;
+	Q = V * D * U;
 	std::cout << "Q:" << std::endl << Q << std::endl << std::endl;
 
 	//Calculate the FRE for the given rotation
