@@ -1,21 +1,31 @@
 #include <iostream>
 #include "asopa.h"
 
-void asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
+int asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	   double threshold,
-	   Eigen::Matrix3d &Q, Eigen::Matrix3d &A, Eigen::Vector3d &t,
+	   Eigen::Matrix3d &Q, Eigen::Matrix3d &A, Eigen::RowVector3d &t,
 	    double &FRE, Eigen::MatrixXd &FRE_mag)
 {
 	//check input dimensions
 	if(X.cols() != 3 || Y.cols() != 3) {
 		std::cerr << "X and Y must be 3xn matrices" << std::endl;
-		return;	
+		return -1;
+	}
+	if(X.rows() == 0 || Y.rows() == 0) {
+		std::cerr << "No points given" << std::endl;
+		return -1;
 	}
 	if(Y.rows() != X.rows()) {
 		std::cerr << "X and Y are required to have the same number of points" << std::endl;
-		return;
+		return - 1;
 	}
-
+	if(X.rows() == 1 || Y.rows() == 1) {
+		Q = Eigen::Matrix3d::Identity();
+		A = Eigen::Matrix3d::Identity();
+		t = (Y.row(0) - X.row(0)).row(0);
+		return 0;
+	}
+	
 	//number of points
 	size_t n = X.rows();
 	
@@ -44,8 +54,7 @@ void asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	D(2, 2) = (U*V).determinant();
 
 	//Find the rotation
-	Q = V * D * U;
-	std::cout << "Q:" << std::endl << Q << std::endl << std::endl;
+	Q = U * D * V;
 
 	//Calculate the FRE for the given rotation
 	Eigen::MatrixXd FRE_vect(n, 3);
@@ -54,7 +63,7 @@ void asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 
 	//starting FRE value to compare to
 	double FRE_orig = 2.0 * (FRE + threshold);
-	
+
 	//majorisation to solve for rotation
        	while(fabs(FRE_orig - FRE) > threshold) {
 		//recompute SVD values
@@ -94,4 +103,5 @@ void asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 
 	//calculate final translation
 	t =  Y_centroid - (Q * A * X_centroid);
+	return 0;
 }
