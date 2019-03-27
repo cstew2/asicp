@@ -20,7 +20,10 @@
 	       
     */
 
-void asicp(Eigen::MatrixXd X, Eigen::MatrixXd Y,
+int asicp(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	   double threshold, size_t max_iterations,
-	   Eigen::Matrix3d &R, Eigen::Matrix3d &A, Eigen::Vector3d &t,
+	   Eigen::Matrix3d &Q, Eigen::Matrix3d &A, Eigen::RowVector3d &t,
 	   double &FRE);
+
+void initial_rotation();
+void initial_scales();

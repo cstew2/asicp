@@ -4,7 +4,7 @@
 int asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	   double threshold,
 	   Eigen::Matrix3d &Q, Eigen::Matrix3d &A, Eigen::RowVector3d &t,
-	    double &FRE, Eigen::MatrixXd &FRE_mag)
+	    double &FRE)
 {
 	//check input dimensions
 	if(X.cols() != 3 || Y.cols() != 3) {
@@ -25,7 +25,7 @@ int asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 		t = (Y.row(0) - X.row(0)).row(0);
 		return 0;
 	}
-	
+
 	//number of points
 	size_t n = X.rows();
 	
@@ -97,11 +97,10 @@ int asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	A(2, 2) = U(2, 2)/V(2, 2);
 
 	//calculate final FRE values
-	FRE_vect = Y_trans - (X_trans * A * Q.transpose());
-	FRE_mag = FRE_vect.rowwise().squaredNorm();
+	FRE_vect = Y_trans - ((X_trans * A) * Q);
 	FRE = sqrt(FRE_vect.squaredNorm()/n);
 
 	//calculate final translation
-	t =  Y_centroid - (Q * A * X_centroid);
+	t =  Y_centroid - (Q * (A * X_centroid));
 	return 0;
 }
