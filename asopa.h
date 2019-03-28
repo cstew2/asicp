@@ -26,5 +26,5 @@
 
 int asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	  double threshold,
-	  Eigen::Matrix3d &Q, Eigen::Matrix3d &A, Eigen::RowVector3d &t,
+	  Eigen::Matrix3d &Q, Eigen::Matrix3d &A, Eigen::Vector3d &t,
 	  double &FRE);

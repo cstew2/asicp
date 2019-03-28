@@ -14,14 +14,14 @@ void test_asopa(void)
 			     Eigen::AngleAxisd(3.99*M_PI/2.8, Eigen::Vector3d::UnitY()).matrix() *
 			     Eigen::AngleAxisd(5.12*M_PI/0.4, Eigen::Vector3d::UnitZ()).matrix());
 	Eigen::Matrix3d S = Eigen::Vector3d::Random(3).asDiagonal() * 20.2;
-	Eigen::RowVector3d l = Eigen::RowVector3d::Random(3) * 10.7;
+	Eigen::Vector3d l = Eigen::RowVector3d::Random(3) * 10.7;
 	
-	Eigen::MatrixXd X = Eigen::MatrixXd::Random(n, 3) * 102.4;
-	Eigen::MatrixXd Y = (R * S * X.transpose()).transpose().rowwise() +  l;
+	Eigen::MatrixXd X = Eigen::MatrixXd::Random(3, n) * 102.4;
+	Eigen::MatrixXd Y = (R * (S * X)).colwise() +  l;
 
 	Eigen::Matrix3d Q(3,3);
 	Eigen::Matrix3d A(3,3);
-	Eigen::RowVector3d t(3);
+	Eigen::Vector3d t(3);
 
 	double threshold = 1e-9f;
 	double FRE = 0.0f;
@@ -33,7 +33,7 @@ void test_asopa(void)
 				  << "Y" << std::endl << Y << std::endl << std::endl;
 			
 			std::cout << "Q*A*X+t:" << std::endl
-				  << (Q * A * X.transpose()).transpose().rowwise() + t
+				  << (Q * (A * X)).colwise() + t
 				  << std::endl << std::endl;
 		}
 	
@@ -57,7 +57,7 @@ void test_asopa(void)
 		
 		std::cout << "Actual Error of Y - (QAX+t)" << std::endl;
 		std::cout << "FRE:" <<
-			sqrt((Y - ((Q * A * X.transpose()).transpose().rowwise() + t)).squaredNorm()/n)
+			sqrt((Y - ((Q * (A * X)).colwise() + t)).squaredNorm()/n)
 			  << std::endl;
 	}
 	
@@ -65,7 +65,7 @@ void test_asopa(void)
 
 void test_asicp(void)
 {
-	size_t n = 20;
+	size_t n = 200;
 	
 	srand(time(NULL));
 	
@@ -74,32 +74,32 @@ void test_asicp(void)
 			     Eigen::AngleAxisd(5.12*M_PI/0.4, Eigen::Vector3d::UnitZ()).matrix());
 	
 	Eigen::Matrix3d S = Eigen::Vector3d::Random(3).asDiagonal() * 10.2;
-	Eigen::RowVector3d l = Eigen::RowVector3d::Random(3) * 10.7;
+	Eigen::Vector3d l = Eigen::Vector3d::Random(3) * 10.7;
 	
-	Eigen::MatrixXd X = Eigen::MatrixXd::Random(n, 3) * 102.4;
-	Eigen::MatrixXd Y = (R * S * X.transpose()).transpose().rowwise() +  l;
-	Eigen::MatrixXd Y_mod(Y.rows(), 3);
+	Eigen::MatrixXd X = Eigen::MatrixXd::Random(3, n) * 102.4;
+	Eigen::MatrixXd Y = (R * (S * X)).colwise() +  l;
+	Eigen::MatrixXd Y_mod(3, Y.cols()/2);
 
 	for(size_t i=0; i < n/2; i++) {
-		Y_mod.row(i) = Y.row(i*2);
+		Y_mod.col(i) = Y.col(i*2);
 	}
 
 	Eigen::Matrix3d Q(3,3);
 	Eigen::Matrix3d A(3,3);
-	Eigen::RowVector3d t(3);
+	Eigen::Vector3d t(3);
 
 	double threshold = 1e-9;
 	double FRE = 0.0f;
-	size_t maximum_iterations = 2000;
+	size_t maximum_iterations = 20;
 
-	if(!asicp(X, Y, threshold, maximum_iterations, Q, A, t, FRE)) {
-		if(n < 10) {
+	if(!asicp(X, Y_mod, threshold, maximum_iterations, Q, A, t, FRE)) {
+		if(n < 30) {
 			std::cout << "Initial configurations:" << std::endl;
 			std::cout << "X" << std::endl << X << std::endl << std::endl
 				  << "Y" << std::endl << Y << std::endl << std::endl;
 			
 			std::cout << "Q*A*X+t:" << std::endl
-				  << (Q * A * X.transpose()).transpose().rowwise() + t
+				  << (Q * (A * X)).colwise() + t
 				  << std::endl << std::endl;
 		}
 	
@@ -123,15 +123,15 @@ void test_asicp(void)
 		
 		std::cout << "Actual Error of Y - (QAX+t)" << std::endl;
 		std::cout << "FRE:" <<
-			sqrt((Y - ((Q * A * X.transpose()).transpose().rowwise() + t)).squaredNorm()/n)
+			sqrt((Y - ((Q * (A * X)).colwise() + t)).squaredNorm()/n)
 			  << std::endl;
 	}
 }
 
 int main(void)
 {
-	std::cout << "Testing ASOPA" << std::endl;
-	test_asopa();
+	//std::cout << "Testing ASOPA" << std::endl;
+	//test_asopa();
 	
 	std::cout << std::endl << std::endl;
 

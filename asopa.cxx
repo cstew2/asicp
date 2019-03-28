@@ -3,45 +3,45 @@
 
 int asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	   double threshold,
-	   Eigen::Matrix3d &Q, Eigen::Matrix3d &A, Eigen::RowVector3d &t,
+	   Eigen::Matrix3d &Q, Eigen::Matrix3d &A, Eigen::Vector3d &t,
 	    double &FRE)
 {
 	//check input dimensions
-	if(X.cols() != 3 || Y.cols() != 3) {
+	if(X.rows() != 3 || Y.rows() != 3) {
 		std::cerr << "X and Y must be 3xn matrices" << std::endl;
 		return -1;
 	}
-	if(X.rows() == 0 || Y.rows() == 0) {
+	if(X.cols() == 0 || Y.cols() == 0) {
 		std::cerr << "No points given" << std::endl;
 		return -1;
 	}
-	if(Y.rows() != X.rows()) {
+	if(Y.cols() != X.cols()) {
 		std::cerr << "X and Y are required to have the same number of points" << std::endl;
 		return - 1;
 	}
-	if(X.rows() == 1 || Y.rows() == 1) {
+	if(X.cols() == 1 || Y.cols() == 1) {
 		Q = Eigen::Matrix3d::Identity();
 		A = Eigen::Matrix3d::Identity();
-		t = (Y.row(0) - X.row(0)).row(0);
+		t = (Y.col(0) - X.col(0)).col(0);
 		return 0;
 	}
 
 	//number of points
-	size_t n = X.rows();
+	size_t n = X.cols();
 	
 	//find centroids
-	Eigen::Vector3d X_centroid = X.colwise().mean();
-	Eigen::Vector3d Y_centroid = Y.colwise().mean();
+	Eigen::Vector3d X_centroid = X.rowwise().mean();
+	Eigen::Vector3d Y_centroid = Y.rowwise().mean();
 
 	//translate input by centroids
-	Eigen::MatrixXd X_trans = X.rowwise() - X_centroid.transpose();
-	Eigen::MatrixXd Y_trans = Y.rowwise() - Y_centroid.transpose();
+	Eigen::MatrixXd X_trans = X.colwise() - X_centroid;
+	Eigen::MatrixXd Y_trans = Y.colwise() - Y_centroid;
 	
 	//normalise translated source input
-	Eigen::MatrixXd X_norm = X_trans.colwise().normalized();
+	Eigen::MatrixXd X_norm = X_trans.rowwise().normalized();
 	
 	//Find the cross covariance matrix
-	Eigen::Matrix3d B = Y_trans.transpose() * X_norm;
+	Eigen::Matrix3d B = Y_trans * X_norm.transpose();
 
 	//use SVD to decompose B such that B=USV^T
 	Eigen::JacobiSVD<Eigen::Matrix3d> svd(B, Eigen::ComputeFullU | Eigen::ComputeFullV);
@@ -57,8 +57,8 @@ int asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	Q = U * D * V;
 
 	//Calculate the FRE for the given rotation
-	Eigen::MatrixXd FRE_vect(n, 3);
-	FRE_vect = X_norm * Q.transpose() - Y_trans;
+	Eigen::MatrixXd FRE_vect(3, n);
+	FRE_vect = Y_trans - Q.transpose() * X_norm;
 	FRE = sqrt(FRE_vect.squaredNorm()/n);
 
 	//starting FRE value to compare to
@@ -81,26 +81,27 @@ int asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 		Q = U * D * V;
 		
 		//recompute FRE value
-		FRE_vect = X_norm * Q.transpose() - Y_trans;
+		FRE_vect = Y_trans - Q.transpose() * X_norm;
 		FRE_orig = FRE;
 		FRE = 0.0f;
 		FRE = sqrt(FRE_vect.squaredNorm()/n);
 	}
 
 	//calculate final scaling
-	B = Y_trans.transpose() * X_trans;
+	B = Y_trans * X_trans.transpose();
 	U = B.transpose() * Q;
-	V = X_trans.transpose() * X_trans;
+	V = X_trans * X_trans.transpose();
 	A = Eigen::Matrix3d::Zero();
 	A(0, 0) = U(0, 0)/V(0, 0);
 	A(1, 1) = U(1, 1)/V(1, 1);
 	A(2, 2) = U(2, 2)/V(2, 2);
 
-	//calculate final FRE values
-	FRE_vect = Y_trans - ((X_trans * A) * Q);
-	FRE = sqrt(FRE_vect.squaredNorm()/n);
-
 	//calculate final translation
 	t =  Y_centroid - (Q * (A * X_centroid));
+	
+	//calculate final FRE values
+	FRE_vect = Y - ((Q * (A * X)).colwise() + t);
+	FRE = sqrt(FRE_vect.squaredNorm()/n);
+	
 	return 0;
 }
