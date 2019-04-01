@@ -4,9 +4,9 @@
 #include "asopa.h"
 
 int asicp(Eigen::MatrixXd X, Eigen::MatrixXd Y,
-	   double threshold, size_t max_iterations,
-	   Eigen::Matrix3d &Q, Eigen::Matrix3d &A, Eigen::Vector3d &t,
-	   double &FRE)
+	  double threshold, size_t max_iterations,
+	  Eigen::Matrix3d &Q, Eigen::Matrix3d &A, Eigen::Vector3d &t,
+	  double &FRE)
 {
 	if(X.rows() != 3 || Y.rows() != 3) {
 		std::cerr << "X and Y must be column matrices with 3 rows" << std::endl;
@@ -16,6 +16,7 @@ int asicp(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	size_t Xn = X.cols();
 	size_t Yn = Y.cols();
 	
+	//find centroids of each point set
 	Eigen::Vector3d X_centroid = X.rowwise().mean();
 	Eigen::Vector3d Y_centroid = Y.rowwise().mean();
 
@@ -91,3 +92,25 @@ int asicp(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	return 0;
 }
 
+void initial_scales(Eigen::MatrixXd X, Eigen::MatrixXd Y,
+		    Eigen::Matrix3d Q,
+		    double &scale)
+{
+	size_t Xn = Y.cols();
+	size_t Yn = Y.cols();
+
+	//find centroids of each point set
+	Eigen::Vector3d X_centroid = X.rowwise().mean();
+	Eigen::Vector3d Y_centroid = Y.rowwise().mean();
+
+	//translate input by centroids
+	Eigen::MatrixXd X_trans = X.colwise() - X_centroid;
+	Eigen::MatrixXd Y_trans = Y.colwise() - Y_centroid;
+
+	Eigen::MatrixXd X_t = Q * X_trans;
+		
+	Eigen::MatrixXd A = 1.0/(double)Xn * (X_t * X_t.transpose());
+	Eigen::MatrixXd B = 1.0/(double)Yn * (Y_trans * Y_trans.transpose());
+
+	
+}

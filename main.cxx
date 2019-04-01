@@ -73,10 +73,10 @@ void test_asicp(void)
 			     Eigen::AngleAxisd(3.99*M_PI/2.8, Eigen::Vector3d::UnitY()).matrix() *
 			     Eigen::AngleAxisd(5.12*M_PI/0.4, Eigen::Vector3d::UnitZ()).matrix());
 	
-	Eigen::Matrix3d S = Eigen::Vector3d::Random(3).asDiagonal() * 10.2;
-	Eigen::Vector3d l = Eigen::Vector3d::Random(3) * 10.7;
+	Eigen::Matrix3d S = Eigen::Vector3d::Random(3).asDiagonal() * 1.2;
+	Eigen::Vector3d l = Eigen::Vector3d::Random(3) * 1.7;
 	
-	Eigen::MatrixXd X = Eigen::MatrixXd::Random(3, n) * 102.4;
+	Eigen::MatrixXd X = Eigen::MatrixXd::Random(3, n) * 10.4;
 	Eigen::MatrixXd Y = (R * (S * X)).colwise() +  l;
 	Eigen::MatrixXd Y_mod(3, Y.cols()/2);
 
@@ -130,8 +130,8 @@ void test_asicp(void)
 
 int main(void)
 {
-	//std::cout << "Testing ASOPA" << std::endl;
-	//test_asopa();
+	std::cout << "Testing ASOPA" << std::endl;
+	test_asopa();
 	
 	std::cout << std::endl << std::endl;
 
