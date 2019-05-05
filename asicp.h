@@ -26,8 +26,6 @@ int asicp(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	  Eigen::Matrix3d &Q, Eigen::Matrix3d &A, Eigen::Vector3d &t,
 	  double &FRE);
 
-void initial_rotation();
-
 /*
   Use Principal Component Analysis to solve for the 
   approximite scaling relationship between the two
