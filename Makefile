@@ -1,7 +1,7 @@
 PROG		= asicp
 
 CC		= g++
-CFLAGS		= -I/usr/include/eigen3 -Wpedantic -Wall -g3 -ggdb
+CFLAGS		= -I/usr/include/eigen3 -I/usr/include/ -O0 -g3 -ggdb
 
 SRC		= $(wildcard *.cxx)
 INC		= $(wildcard *.h)

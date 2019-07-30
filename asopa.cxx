@@ -2,9 +2,9 @@
 #include "asopa.h"
 
 int asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
-	   double threshold,
-	   Eigen::Matrix3d &Q, Eigen::Matrix3d &A, Eigen::Vector3d &t,
-	    double &FRE)
+	  double threshold, bool estimate,
+	  Eigen::Matrix3d &Q, Eigen::Matrix3d &A, Eigen::Vector3d &t,
+	  double &RMSE)
 {
 	//check input dimensions
 	if(X.rows() != 3 || Y.rows() != 3) {
@@ -29,6 +29,7 @@ int asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	Q = Eigen::Matrix3d::Identity();
 	A = Eigen::Matrix3d::Identity();
 	t = Eigen::Vector3d::Zero();
+	
 	
 	//number of points
 	size_t n = X.cols();
@@ -60,16 +61,16 @@ int asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	//Find the rotation
 	Q = U * D * V;
 
-	//Calculate the FRE for the given rotation
-	Eigen::MatrixXd FRE_vect(3, n);
-	FRE_vect = Y_trans - Q.transpose() * X_norm;
-	FRE = sqrt(FRE_vect.squaredNorm()/n);
+	//Calculate the RMSE for the given rotation
+	Eigen::MatrixXd RMSE_vect(3, n);
+	RMSE_vect = Y_trans - Q.transpose() * X_norm;
+	RMSE = sqrt(RMSE_vect.squaredNorm()/n);
 
-	//starting FRE value to compare to
-	double FRE_orig = 2.0 * (FRE + threshold);
+	//starting RMSE value to compare to
+	double RMSE_orig = 2.0 * (RMSE + threshold);
 
 	//majorisation to solve for rotation
-       	while(fabs(FRE_orig - FRE) > threshold) {
+       	while(fabs(RMSE_orig - RMSE) > threshold) {
 		//recompute SVD values
 		Eigen::Matrix3d QB = Q.transpose() * B;
 		Eigen::Matrix3d I = Eigen::Matrix3d::Zero();
@@ -84,11 +85,11 @@ int asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 		D(2, 2) = (U*V).determinant();
 		Q = U * D * V;
 		
-		//recompute FRE value
-		FRE_vect = Y_trans - Q.transpose() * X_norm;
-		FRE_orig = FRE;
-		FRE = 0.0f;
-		FRE = sqrt(FRE_vect.squaredNorm()/n);
+		//recompute RMSE value
+		RMSE_vect = Y_trans - Q.transpose() * X_norm;
+		RMSE_orig = RMSE;
+		RMSE = 0.0f;
+		RMSE = sqrt(RMSE_vect.squaredNorm()/n);
 	}
 
 	//calculate final scaling
@@ -103,9 +104,9 @@ int asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	//calculate final translation
 	t =  Y_centroid - (Q * (A * X_centroid));
 	
-	//calculate final FRE values
-	FRE_vect = Y - ((Q * (A * X)).colwise() + t);
-	FRE = sqrt(FRE_vect.squaredNorm()/n);
+	//calculate final RMSE values
+	RMSE_vect = Y - ((Q * (A * X)).colwise() + t);
+	RMSE = sqrt(RMSE_vect.squaredNorm()/n);
 	
 	return 0;
 }

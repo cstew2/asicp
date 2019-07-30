@@ -8,31 +8,32 @@
   International Journal of Computer Assisted Radiology and Surgery
   June 2015, Volume 10, Issue 6, pp 867–878
 
-  Ansiotropically Scaled Orthogonal Procrustes Algorithm
+  Ansiotropically Scaled Iterative Closest Point Algorithm
   Finds 3D Transformation from X to Y
+
   Inputs: 3xn Matrix           - X
           3xn Matrix           - Y
           Accuracy of estimate - threshold
           Maximum interations  - max_iterations
+	  Esimates given       - estimate
+
   Outputs: 3x3 Rotation Matrix         - R,
            3x3 Scaling Matrix          - A
            1x3 Translation vector      - t
-	   Fiducial Registration Error - FRE
+	   Root Mean Square Error      - RMSE
 	       
 */
 
 int asicp(Eigen::MatrixXd X, Eigen::MatrixXd Y,
-	  double threshold, size_t max_iterations,
+	  double threshold, size_t max_iterations, double asopa_threshold,  bool estimate,
 	  Eigen::Matrix3d &Q, Eigen::Matrix3d &A, Eigen::Vector3d &t,
-	  double &FRE);
+	  double &RMSE);
 
 /*
   Use Principal Component Analysis to solve for the 
-  approximite scaling relationship between the two
-  points sets.
-
+  approximite scaling and rotation relationship between 
+  the two points sets.
  */
-
-void initial_scales(Eigen::MatrixXd X, Eigen::MatrixXd Y,
-		    Eigen::Matrix3d Q,
-		    double &scale);
+void initialize(Eigen::MatrixXd X, Eigen::MatrixXd Y,
+		Eigen::Matrix3d &Q,
+		Eigen::Matrix3d &A);

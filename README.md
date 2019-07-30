@@ -30,10 +30,14 @@ The ASICP algorithm is as follows:
 
 ### References
 * Elvis C.S. Chen, A. Jonathan McLeod, John S.H. Baxter, Terry M. Peters,
-  "Registration of 3D shapes under anisotropic scaling"
-  International Journal of Computer Assisted Radiology and Surgery
-  June 2015, Volume 10, Issue 6, pp 867–878
+  "Registration of 3D shapes under anisotropic scaling",
+  International Journal of Computer Assisted Radiology and Surgery,
+  June 2015, Volume 10, Issue 6, pp 867–878.
   
 * Mohammed Bennani Dosse and Jos Ten Berge (2010),
-  "Anisotropic Orthogonal Procrustes Analysis"
-  Journal of Classification 27:111-128
+  "Anisotropic Orthogonal Procrustes Analysis",
+  Journal of Classification 27:111-128.
+
+* I.T. Jolliffe (1986),
+  "Principal component analysis",
+  Springer: New York.
