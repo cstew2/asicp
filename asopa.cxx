@@ -1,8 +1,8 @@
 #include <iostream>
-#include "asopa.h"
+#include "asopa.hxx"
 
 int asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
-	  double threshold, bool estimate,
+	  double threshold,
 	  Eigen::Matrix3d &Q, Eigen::Matrix3d &A, Eigen::Vector3d &t,
 	  double &RMSE)
 {

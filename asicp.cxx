@@ -1,9 +1,10 @@
- #include <iostream>
+#include <iostream>
 
 #include <nanoflann.hpp>
 
-#include "asicp.h"
-#include "asopa.h"
+#include "asicp.hxx"
+#include "asopa.hxx"
+#include "pca.hxx"
 
 int asicp(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	  double threshold, size_t max_iterations, double asopa_threshold, bool estimate,
@@ -36,16 +37,21 @@ int asicp(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	Eigen::MatrixXd Y_close(3, Yn);
 	//scaled Y points
 	Eigen::MatrixXd Y_scale(3, Yn);
-	
+
+	//set up kd-tree
 	typedef nanoflann::KDTreeEigenMatrixAdaptor<
 		Eigen::MatrixXd, -1, nanoflann::metric_L2>
 		kd_tree_t;
+	
 	const int max_leaves = 10;
 
 	if(!estimate) {
 		Q = Eigen::Matrix3d::Identity();
 		A = Eigen::Matrix3d::Identity();
 		t = Eigen::Vector3d::Zero();
+	}
+	else {
+		pca_registration(X, Y, Q, A, t, RMSE);
 	}
 	
 	//transformation between iterations
@@ -56,7 +62,6 @@ int asicp(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	//initialise kd-tree of Y
 	
 	double RMSE_prev = sqrt((Y_trans - X_trans).squaredNorm()/Yn);
-	
 	double RMSE_asopa = 0.0;
 	
 	for(size_t j=0; j < max_iterations; j++) {

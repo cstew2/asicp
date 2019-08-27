@@ -25,15 +25,6 @@
 */
 
 int asicp(Eigen::MatrixXd X, Eigen::MatrixXd Y,
-	  double threshold, size_t max_iterations, double asopa_threshold,  bool estimate,
+	  double threshold, size_t max_iterations, double asopa_threshold, bool estimate,
 	  Eigen::Matrix3d &Q, Eigen::Matrix3d &A, Eigen::Vector3d &t,
 	  double &RMSE);
-
-/*
-  Use Principal Component Analysis to solve for the 
-  approximite scaling and rotation relationship between 
-  the two points sets.
- */
-void initialize(Eigen::MatrixXd X, Eigen::MatrixXd Y,
-		Eigen::Matrix3d &Q,
-		Eigen::Matrix3d &A);

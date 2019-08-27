@@ -1,14 +1,14 @@
-PROG		= asicp
+TARGET		= asicp
 
 CC		= g++
-CFLAGS		= -I/usr/include/eigen3 -I/usr/include/ -O0 -g3 -ggdb
+CFLAGS		= -I/usr/include/eigen3 -I/usr/include/ -std=c++17 -O0 -g3 -ggdb
 
 SRC		= $(wildcard *.cxx)
-INC		= $(wildcard *.h)
+INC		= $(wildcard *.hxx)
 
 OBJ		= $(SRC:.cxx=.o)
 
-$(PROG): $(OBJ)
+$(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) $^ -o $@
 
 %.o: %.cxx
