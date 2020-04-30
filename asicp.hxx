@@ -17,14 +17,21 @@
           Maximum interations  - max_iterations
 	  Esimates given       - estimate
 
-  Outputs: 3x3 Rotation Matrix         - R,
+  Outputs: 3x3 Rotation Matrix         - Q,
            3x3 Scaling Matrix          - A
            1x3 Translation vector      - t
 	   Root Mean Square Error      - RMSE
 	       
 */
 
+
 int asicp(Eigen::MatrixXd X, Eigen::MatrixXd Y,
-	  double threshold, size_t max_iterations, double asopa_threshold, bool estimate,
+	  double threshold, size_t max_iterations, double asopa_threshold,
+	  bool estimate, int rotations,
 	  Eigen::Matrix3d &Q, Eigen::Matrix3d &A, Eigen::Vector3d &t,
 	  double &RMSE);
+
+int asicp_rot(Eigen::MatrixXd X, Eigen::MatrixXd Y,
+	      double threshold, size_t max_iterations, double asopa_threshold,
+	      Eigen::Matrix3d &Q, Eigen::Matrix3d &A, Eigen::Vector3d &t,
+	      double &RMSE);

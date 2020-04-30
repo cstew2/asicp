@@ -22,7 +22,8 @@ The ASICP algorithm is as follows:
 
 ### Dependencies
 * Eigen Library (tested with 3.3.7)
-* C++ compiler (tested with g++ 8 and 9 and clang++ 6)
+* Nanoflann (git master)
+* C++ compiler (tested with g++ 8 and 9 and clang++ 9)
 
 ### Usage
 1. ``$ make``

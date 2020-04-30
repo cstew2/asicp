@@ -25,11 +25,10 @@ int asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 		t = (Y.col(0) - X.col(0)).col(0);
 		return 0;
 	}
-
+	
 	Q = Eigen::Matrix3d::Identity();
 	A = Eigen::Matrix3d::Identity();
 	t = Eigen::Vector3d::Zero();
-	
 	
 	//number of points
 	size_t n = X.cols();

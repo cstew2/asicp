@@ -3,12 +3,10 @@
 
 /*
   Use Principal Component Analysis to solve for the 
-  approximite scaling and rotation relationship between 
+  approximite scaling relationship between 
   the two points sets.
  */
 
-int pca_registration(Eigen::MatrixXd X, Eigen::MatrixXd Y,
-		     Eigen::Matrix3d &Q,
-		     Eigen::Matrix3d &A,
-		     Eigen::Vector3d &t,
-		     double &RMSE);
+int pca_scales(Eigen::MatrixXd X, Eigen::MatrixXd Y,
+	       Eigen::Matrix3d &R,
+	       Eigen::Matrix3d &A);

@@ -5,17 +5,79 @@
 #include "asicp.hxx"
 #include "asopa.hxx"
 #include "pca.hxx"
+#include "rotation.hxx"
 
 int asicp(Eigen::MatrixXd X, Eigen::MatrixXd Y,
-	  double threshold, size_t max_iterations, double asopa_threshold, bool estimate,
+	  double threshold, size_t max_iterations, double asopa_threshold,
+	  bool estimate, int rotations,
 	  Eigen::Matrix3d &Q, Eigen::Matrix3d &A, Eigen::Vector3d &t,
 	  double &RMSE)
+{
+	Eigen::Matrix3d best_Q;
+
+	if(estimate) {
+		asicp_rot(X, Y, threshold, max_iterations,
+			  asopa_threshold, Q, A, t, RMSE);
+		return 0;
+	}
+
+	Eigen::Matrix3d Q_best(3,3);
+	Eigen::Matrix3d A_best(3,3);
+	Eigen::Vector3d t_best(3);
+	double RMSE_best = std::numeric_limits<double>::max();
+
+	std::vector<Eigen::Quaterniond> rots = get_rots(rotations);
+
+	//go through discrete subgroup of SO(3)
+	for(int i=0; i < rots.size(); i++) {
+		std::cout << "Iteration:" << i << std::endl;
+		std::cout << rots[i].coeffs() << std::endl << std::endl;
+		
+		//get rotation
+		Q = rots[i].toRotationMatrix();
+				
+		//std::cout << "R:" << std::endl << Q << std::endl;
+		//std::cout << "A:" << std::endl << A << std::endl;
+		
+		//go through each scale
+		for(int j=0; j < 3; j++) {
+			
+			//calculate scales with current rotation
+			pca_scales(X, Y, Q, A);
+
+			asicp_rot(X, Y, threshold, max_iterations, asopa_threshold, Q, A, t, RMSE);
+			
+			if(RMSE < RMSE_best) {
+				Q_best = Q;
+				A_best = A;
+				t_best = t;
+			}
+			
+			//change scaling order
+			double temp = A(0,0);
+			A(0,0) = A(1,1);
+			A(1,1) = A(2,2);
+			A(2,2) = temp;
+		}
+	}
+
+	Q = Q_best;
+	A = A_best;
+	t = t_best;
+	
+	return 0;
+}
+
+int asicp_rot(Eigen::MatrixXd X, Eigen::MatrixXd Y,
+	      double threshold, size_t max_iterations, double asopa_threshold,
+	      Eigen::Matrix3d &Q, Eigen::Matrix3d &A, Eigen::Vector3d &t,
+	      double &RMSE)
 {
 	if(X.rows() != 3 || Y.rows() != 3) {
 		std::cerr << "X and Y must be column matrices with 3 rows" << std::endl;
 		return -1;	
 	}
-
+	
 	//size of inputs
 	size_t Xn = X.cols();
 	size_t Yn = Y.cols();
@@ -38,37 +100,46 @@ int asicp(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	//scaled Y points
 	Eigen::MatrixXd Y_scale(3, Yn);
 
-	//set up kd-tree
+	Eigen::Matrix3d A_orig = A;
+	
+	//initialise kd-tree
 	typedef nanoflann::KDTreeEigenMatrixAdaptor<
-		Eigen::MatrixXd, -1, nanoflann::metric_L2>
+		Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>,
+		3,
+		nanoflann::metric_L2,
+		false>
 		kd_tree_t;
-	
-	const int max_leaves = 10;
-
-	if(!estimate) {
-		Q = Eigen::Matrix3d::Identity();
-		A = Eigen::Matrix3d::Identity();
-		t = Eigen::Vector3d::Zero();
-	}
-	else {
-		pca_registration(X, Y, Q, A, t, RMSE);
-	}
-	
-	//transformation between iterations
-	Eigen::Matrix3d Q_mod;
-	Eigen::Matrix3d A_mod;
-	Eigen::Vector3d t_mod;
-
-	//initialise kd-tree of Y
 	
 	double RMSE_prev = sqrt((Y_trans - X_trans).squaredNorm()/Yn);
 	double RMSE_asopa = 0.0;
 	
 	for(size_t j=0; j < max_iterations; j++) {
-		std::cout << "iteration " << j << std::endl;
-		std::cout << "Q" << std::endl << Q << std::endl;
-		std::cout << "A" << std::endl << A << std::endl;
-		std::cout << "t" << std::endl << t << std::endl;
+		//std::cout << "iteration " << j << " error delta: " << std::abs(RMSE_prev - RMSE) << std::endl;
+		//std::cout << "Q" << std::endl << Q << std::endl;
+		//std::cout << "A" << std::endl << A << std::endl;
+		//std::cout << "t" << std::endl << t << std::endl;
+
+		//bound scale values
+		if(A(0, 0) < 0.9 * A_orig(0, 0)) {
+			A(0, 0) = 1.1 * A_orig(0, 0);
+		}
+		if(A(0, 0) > 1.1 * A_orig(0, 0)) {
+			A(0, 0) = 0.9 * A_orig(0, 0);
+		}
+		
+		if(A(1, 1) < 0.9 * A_orig(1, 1)) {
+			A(1, 1) = 1.1 * A_orig(1, 1);
+		}
+		if(A(1, 1) > 1.1 * A_orig(1, 1)) {
+			A(1, 1) = 0.9 * A_orig(1, 1);
+		}
+		
+		if(A(2, 2) < 0.9 * A_orig(2, 2)) {
+			A(2, 2) = 1.1 * A_orig(2, 2);
+		}
+		if(A(2, 2) > 1.1 * A_orig(2, 2)) {
+			A(2, 2) = 0.9 * A_orig(2, 2);
+		}
 		
 		//current transformation
 		X_curr = (Q * (A * X_trans));
@@ -80,39 +151,44 @@ int asicp(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 			Y_scale(1,i) = Y_trans(1,i)/sqrt(A(1,1));
 			Y_scale(2,i) = Y_trans(2,i)/sqrt(A(2,2));
 		}
-		kd_tree_t kd_tree(Yn, std::cref(Y_scale), max_leaves);
-	        kd_tree.index->buildIndex();
-	        
+			        
 		for(size_t i=0; i < Xn; i++) {
 			//scale source
-			X_scale(0, i) = Y_trans(0,i)/sqrt(A(0,0));
-			X_scale(1, i) = Y_trans(1,i)/sqrt(A(1,1));
-			X_scale(2, i) = Y_trans(2,i)/sqrt(A(2,2));
+			X_scale(0, i) = X_curr(0,i)/sqrt(A(0,0));
+			X_scale(1, i) = X_curr(1,i)/sqrt(A(1,1));
+			X_scale(2, i) = X_curr(2,i)/sqrt(A(2,2));
 		}
-		const size_t num_results = 3;
-		std::vector<size_t> ret_indexes(num_results);
-		std::vector<double> out_dists_sqr(num_results);
 
+		//initialize kd tree with scaled Y points
+		kd_tree_t kd_tree(3, Y_scale, 10);
+		kd_tree.index->buildIndex();
 		for(size_t i=0; i < Xn; i++) {
-			nanoflann::KNNResultSet<double> resultSet(num_results);
-			resultSet.init(&ret_indexes[0], &out_dists_sqr[0]);
-			kd_tree.index->findNeighbors(resultSet, &X_scale(i),
-						     nanoflann::SearchParams(1));
+			size_t ret_index;
+			double out_dist_sqr;
+			nanoflann::KNNResultSet<double> result_set(1);
+			result_set.init(&ret_index, &out_dist_sqr);
+			double query[3];
+			query[0] = X_scale(0,i);
+			query[1] = X_scale(1,i);
+			query[2] = X_scale(2,i);
+			//find closest points in the scaled Y points to the current transformed points of X
+			kd_tree.index->findNeighbors(result_set,
+						     &query[0],
+						     nanoflann::SearchParams(10));
+			Y_close.col(i) = X_curr.col(ret_index);
 		}
-		
+       		
 		//find transformation
-		asopa(X_curr, Y_close, asopa_threshold, Q_mod, A_mod, t_mod, RMSE_asopa);
-		Q = Q * Q_mod;
-		A = A * A_mod;
+		asopa(X_curr, Y_close, asopa_threshold, Q, A, t, RMSE_asopa);      		
 		
+		//set previous error to current
+		RMSE_prev = RMSE;
+
 		//calculate error
 		RMSE = sqrt((Y_close - (Q * (A * X_curr))).squaredNorm()/Xn);
-		if(abs(RMSE_prev - RMSE) < threshold) {
+		if(std::abs(RMSE_prev - RMSE) < threshold) {
 			break;
 		}
-		
-		//set prev to current
-		RMSE_prev = RMSE;
 	}
 	
 	//calculate transform using centroids with rotation and scaling
