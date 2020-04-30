@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>
 #include <random>
 
 #include <Eigen/Dense>
@@ -67,7 +68,7 @@ void test_asicp(void)
 	size_t n = 16;
 	
 	srand(time(NULL));
-	std::default_random_engine rand;
+	std::default_random_engine rand(std::chrono::system_clock::now().time_since_epoch().count());
 	std::uniform_real_distribution<double> radians(-2*M_PI, 2*M_PI);
 	std::uniform_real_distribution<double> reals(0.8,1.2);
 
@@ -75,7 +76,7 @@ void test_asicp(void)
 			     Eigen::AngleAxisd(radians(rand), Eigen::Vector3d::UnitY()).matrix() *
 			     Eigen::AngleAxisd(radians(rand), Eigen::Vector3d::UnitZ()).matrix());
 	Eigen::Matrix3d S = Eigen::Vector3d(reals(rand), reals(rand), reals(rand)).asDiagonal();
-	Eigen::Vector3d l = Eigen::RowVector3d::Random(3) * reals(rand);
+	Eigen::Vector3d l = Eigen::Vector3d(reals(rand), reals(rand), reals(rand));
 	
 	Eigen::MatrixXd X = Eigen::MatrixXd::Random(3, n) * reals(rand);
 	Eigen::MatrixXd Y = (R * (S * X)).colwise() +  l;
