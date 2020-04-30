@@ -30,8 +30,8 @@ int asicp(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 
 	//go through discrete subgroup of SO(3)
 	for(int i=0; i < rots.size(); i++) {
-		std::cout << "Iteration:" << i << std::endl;
-		std::cout << rots[i].coeffs() << std::endl << std::endl;
+		//std::cout << "Iteration:" << i << std::endl;
+		//std::cout << rots[i].coeffs() << std::endl << std::endl;
 		
 		//get rotation
 		Q = rots[i].toRotationMatrix();

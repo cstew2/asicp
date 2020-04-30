@@ -54,7 +54,8 @@ std::vector<Eigen::Quaterniond> get_rots(int n)
 			q.push_back(q_k[i] * q_j[j]);
 		}
 	}
-	
+
+	//should think of a better way to do this
 	for(int i=0; i < q.size(); i++) {
 		for(int j=0; j < q.size(); j++) {
 			if(q[i].coeffs() == q[j].coeffs() && i!=j) {
