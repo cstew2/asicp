@@ -51,6 +51,8 @@ int asicp(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 				Q_best = Q;
 				A_best = A;
 				t_best = t;
+
+				RMSE_best = RMSE;
 			}
 			
 			//change scaling order
@@ -112,6 +114,10 @@ int asicp_rot(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	
 	double RMSE_prev = sqrt((Y_trans - X_trans).squaredNorm()/Yn);
 	double RMSE_asopa = 0.0;
+	
+	std::cout << "Q" << std::endl << Q << std::endl;
+	std::cout << "A" << std::endl << A << std::endl;
+	std::cout << "t" << std::endl << t << std::endl;
 	
 	for(size_t j=0; j < max_iterations; j++) {
 		//std::cout << "iteration " << j << " error delta: " << std::abs(RMSE_prev - RMSE) << std::endl;

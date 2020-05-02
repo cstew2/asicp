@@ -65,7 +65,7 @@ void test_asopa(void)
 
 void test_asicp(void)
 {
-	size_t n = 16;
+	size_t n = 1000;
 	
 	srand(time(NULL));
 	std::default_random_engine rand(std::chrono::system_clock::now().time_since_epoch().count());
@@ -90,7 +90,7 @@ void test_asicp(void)
 	t = Eigen::Vector3d::Zero();
 	
 	double threshold = 1e-6;
-	size_t maximum_iterations = 100;
+	size_t maximum_iterations = 200;
 	double asopa_threshold = 1e-9;
 	int rotations = 4;
 	double RMSE = 0.0f;

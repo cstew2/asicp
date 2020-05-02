@@ -41,5 +41,6 @@ int pca_scales(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	//std::cout << X_eval(2) << " " << Y_eval(2) << " = " << X_eval(2)/Y_eval(2) << std::endl;
 
 	//std::cout << X_eval(0)/Y_eval(0)+X_eval(1)/Y_eval(1)+X_eval(2)/Y_eval(2) << std::endl;
+	
 	return 0;
 }
