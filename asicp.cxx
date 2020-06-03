@@ -30,31 +30,26 @@ int asicp(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 
 	//go through discrete subgroup of SO(3)
 	for(int i=0; i < rots.size(); i++) {
-		//std::cout << "Iteration:" << i << std::endl;
-		//std::cout << rots[i].coeffs() << std::endl << std::endl;
-		
 		//get rotation
-		Q = rots[i].toRotationMatrix();
-				
-		//std::cout << "R:" << std::endl << Q << std::endl;
-		//std::cout << "A:" << std::endl << A << std::endl;
+		Q = rots[i].toRotationMatrix();			
+      
+		//calculate scales with current rotation
+		pca_scales(X, Y, Q, A);
 		
 		//go through each scale
 		for(int j=0; j < 3; j++) {
-			
-			//calculate scales with current rotation
-			pca_scales(X, Y, Q, A);
 
+			//std::cout << "A:" << A << std::endl;
+			//std::cout << "Q:" << Q << std::endl;
+			
 			asicp_rot(X, Y, threshold, max_iterations, asopa_threshold, Q, A, t, RMSE);
 			
 			if(RMSE < RMSE_best) {
 				Q_best = Q;
 				A_best = A;
 				t_best = t;
-
 				RMSE_best = RMSE;
 			}
-			
 			//change scaling order
 			double temp = A(0,0);
 			A(0,0) = A(1,1);
@@ -115,38 +110,36 @@ int asicp_rot(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	double RMSE_prev = sqrt((Y_trans - X_trans).squaredNorm()/Yn);
 	double RMSE_asopa = 0.0;
 	
-	std::cout << "Q" << std::endl << Q << std::endl;
-	std::cout << "A" << std::endl << A << std::endl;
-	std::cout << "t" << std::endl << t << std::endl;
-	
 	for(size_t j=0; j < max_iterations; j++) {
 		//std::cout << "iteration " << j << " error delta: " << std::abs(RMSE_prev - RMSE) << std::endl;
 		//std::cout << "Q" << std::endl << Q << std::endl;
 		//std::cout << "A" << std::endl << A << std::endl;
 		//std::cout << "t" << std::endl << t << std::endl;
 
+		
 		//bound scale values
 		if(A(0, 0) < 0.9 * A_orig(0, 0)) {
-			A(0, 0) = 1.1 * A_orig(0, 0);
+			A(0, 0) = 0.9 * A_orig(0, 0);
 		}
 		if(A(0, 0) > 1.1 * A_orig(0, 0)) {
-			A(0, 0) = 0.9 * A_orig(0, 0);
+			A(0, 0) = 1.1 * A_orig(0, 0);
 		}
 		
 		if(A(1, 1) < 0.9 * A_orig(1, 1)) {
-			A(1, 1) = 1.1 * A_orig(1, 1);
+			A(1, 1) = 0.9 * A_orig(1, 1);
 		}
 		if(A(1, 1) > 1.1 * A_orig(1, 1)) {
-			A(1, 1) = 0.9 * A_orig(1, 1);
+			A(1, 1) = 1.1 * A_orig(1, 1);
 		}
 		
 		if(A(2, 2) < 0.9 * A_orig(2, 2)) {
-			A(2, 2) = 1.1 * A_orig(2, 2);
-		}
-		if(A(2, 2) > 1.1 * A_orig(2, 2)) {
 			A(2, 2) = 0.9 * A_orig(2, 2);
 		}
-		
+		if(A(2, 2) > 1.1 * A_orig(2, 2)) {
+			A(2, 2) = 1.1 * A_orig(2, 2);
+		}
+			
+
 		//current transformation
 		X_curr = (Q * (A * X_trans));
 
@@ -166,7 +159,7 @@ int asicp_rot(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 		}
 
 		//initialize kd tree with scaled Y points
-		kd_tree_t kd_tree(3, Y_scale, 10);
+		kd_tree_t kd_tree(3, X_scale, 10);
 		kd_tree.index->buildIndex();
 		for(size_t i=0; i < Xn; i++) {
 			size_t ret_index;
@@ -181,8 +174,9 @@ int asicp_rot(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 			kd_tree.index->findNeighbors(result_set,
 						     &query[0],
 						     nanoflann::SearchParams(10));
-			Y_close.col(i) = X_curr.col(ret_index);
+			Y_close.col(i) = Y_trans.col(ret_index);
 		}
+		
        		
 		//find transformation
 		asopa(X_curr, Y_close, asopa_threshold, Q, A, t, RMSE_asopa);      		

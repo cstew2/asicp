@@ -89,10 +89,10 @@ void test_asicp(void)
 	A = Eigen::Matrix3d::Identity();
 	t = Eigen::Vector3d::Zero();
 	
-	double threshold = 1e-6;
-	size_t maximum_iterations = 200;
-	double asopa_threshold = 1e-9;
-	int rotations = 4;
+	double threshold = 1e-12;
+	size_t maximum_iterations = 50;
+	double asopa_threshold = 1e-12;
+	int rotations = 5;
 	double RMSE = 0.0f;
 	
 	if(!asicp(X, Y, threshold, maximum_iterations, asopa_threshold, false, rotations, Q, A, t, RMSE)) {

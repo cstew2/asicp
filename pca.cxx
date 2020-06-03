@@ -31,14 +31,14 @@ int pca_scales(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 	es.compute(Sy);
 	Eigen::Matrix3d Y_evec = es.eigenvectors();
 	Eigen::Vector3d Y_eval = es.eigenvalues();
-	
-	A.diagonal() = Eigen::Vector3d(X_eval(0)/Y_eval(0),
-				       X_eval(1)/Y_eval(1),
-				       X_eval(2)/Y_eval(2));
 
-	//std::cout << X_eval(0) << " " << Y_eval(0) << " = " << X_eval(0)/Y_eval(0) << std::endl;
-	//std::cout << X_eval(1) << " " << Y_eval(1) << " = " << X_eval(1)/Y_eval(1) << std::endl;
-	//std::cout << X_eval(2) << " " << Y_eval(2) << " = " << X_eval(2)/Y_eval(2) << std::endl;
+	A.diagonal() = Eigen::Vector3d(Y_eval(0)/X_eval(0),
+				       Y_eval(1)/X_eval(1),
+				       Y_eval(2)/X_eval(2));
+	
+	//std::cout << Y_eval(0) << " " << X_eval(0) << " = " << Y_eval(0)/X_eval(0) << std::endl;
+	//std::cout << Y_eval(1) << " " << X_eval(1) << " = " << Y_eval(1)/X_eval(1) << std::endl;
+	//std::cout << Y_eval(2) << " " << X_eval(2) << " = " << Y_eval(2)/X_eval(2) << std::endl;
 
 	//std::cout << X_eval(0)/Y_eval(0)+X_eval(1)/Y_eval(1)+X_eval(2)/Y_eval(2) << std::endl;
 	
