@@ -8,15 +8,15 @@ int asopa(Eigen::MatrixXd X, Eigen::MatrixXd Y,
 {
 	//check input dimensions
 	if(X.rows() != 3 || Y.rows() != 3) {
-		std::cerr << "X and Y must be 3xn matrices" << std::endl;
+		std::cerr << "ASOPA: X and Y must be 3xn matrices" << std::endl;
 		return -1;
 	}
 	if(X.cols() == 0 || Y.cols() == 0) {
-		std::cerr << "No points given" << std::endl;
+		std::cerr << "ASOPA: No points given" << std::endl;
 		return -1;
 	}
 	if(Y.cols() != X.cols()) {
-		std::cerr << "X and Y are required to have the same number of points" << std::endl;
+		std::cerr << "ASOPA: X and Y are required to have the same number of points" << std::endl;
 		return - 1;
 	}
 	if(X.cols() == 1 || Y.cols() == 1) {

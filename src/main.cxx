@@ -11,7 +11,6 @@ int run_tests(void)
 	test_asopa();
 	
 	std::cout << std::endl << std::endl;
-
 	*/
 	std::cout << "Testing ASICP" << std::endl;
 	test_asicp();
@@ -53,8 +52,6 @@ int main(int argc, char **argv)
 			filename_dst = argv[++i];
 		}
 	}
-
-	
 	
 	return 0;
 }
